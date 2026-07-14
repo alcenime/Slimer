@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Slime Runes</title>
+<style>
+  :root{
+    --bg: #f4f9e9;
+    --bg-alt: #eef7db;
+    --green: #7ac93c;
+    --green-dark: #3f7d1c;
+    --green-deep: #1f3d0f;
+    --terminal: #16240f;
+    --pink: #f4a6c6;
+    --cream: #fffdf6;
+    --line: #dbe9c2;
+    --text: #234015;
+
+    --mood-happy: #7ac93c;
+    --mood-angry: #ef6a5f;
+    --mood-sad: #6fb3e0;
+    --mood-excited: #f0b93a;
+    --mood-sleepy: #a687d6;
+    --mood-chaos: #2b2b2b;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    font-family:'Trebuchet MS', 'Segoe UI', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+  }
+  .mono{ font-family:'Courier New', monospace; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; border:none; background:none; cursor:pointer; color:inherit; }
+
+  .wrap{ max-width:1320px; margin:0 auto; padding:0 32px; }
+
+  /* ---------- NAVBAR ---------- */
+  .navbar{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:16px;
+    padding:22px 32px;
+    max-width:1320px;
+    margin:0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; color:var(--green-deep); }
+  .brand .blob-face{ width:42px; height:42px; border-radius:50%; overflow:hidden; }
+  .brand .blob-face img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .brand .lines{ display:flex; flex-direction:column; line-height:1.05; }
+  .brand .lines span:first-child{ color:var(--green); }
+
+  .navlinks{
+    display:flex; align-items:center; gap:4px;
+    background:var(--cream);
+    border-radius:999px;
+    padding:6px;
+    box-shadow:inset 0 0 0 1px var(--line);
+    justify-self:center;
+  }
+  .navlinks a{
+    display:flex; align-items:center; gap:7px;
+    padding:10px 18px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    color:#5a6b48;
+  }
+  .navlinks a.active{ background:var(--bg-alt); color:var(--green-dark); }
+
+  .navbar .btn-terminal{ justify-self:end; }
+  .btn-terminal{
+    display:flex; align-items:center; gap:8px;
+    background:var(--terminal);
+    color:#a9e57a;
+    font-weight:700;
+    font-size:14px;
+    padding:12px 20px;
+    border-radius:10px;
+    white-space:nowrap;
+    box-shadow: inset 0 0 0 1px transparent;
+    transition: box-shadow .2s ease;
+  }
+  .btn-terminal.wallet-connected{
+    box-shadow: inset 0 0 0 1px #a9e57a;
+  }
+
+  /* ---------- PROFILE HEADER ---------- */
+  .profile-hero{
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:32px;
+    display:flex;
+    align-items:center;
+    gap:24px;
+    margin:8px 0 28px;
+    flex-wrap:wrap;
+  }
+  .profile-avatar{
+    width:88px; height:88px;
+    border-radius:50%;
+    overflow:hidden;
+    border:3px solid var(--cream);
+    box-shadow:0 0 0 3px var(--green);
+    flex-shrink:0;
+  }
+  .profile-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .profile-info{ flex:1; min-width:200px; }
+  .profile-info h1{ font-size:22px; color:var(--green-deep); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .profile-info .wallet-status{ font-size:13px; color:#8ba36e; }
+  .profile-info .wallet-status.connected{ color:var(--green-dark); font-weight:700; }
+
+  .profile-stats{ display:flex; gap:26px; }
+  .stat{ text-align:center; }
+  .stat .num{ font-size:20px; font-weight:800; color:var(--green-deep); }
+  .stat .label{ font-size:11px; color:#8ba36e; text-transform:uppercase; letter-spacing:0.04em; }
+
+  /* ---------- STREAK BAR ---------- */
+  .streak-card{
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:28px;
+    font-size:13.5px;
+    color:#5a6b48;
+  }
+  .streak-card strong{ color:var(--green-dark); }
+
+  /* ---------- TABS ---------- */
+  .tabs{
+    display:flex;
+    gap:6px;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px;
+    width:fit-content;
+    margin-bottom:24px;
+  }
+  .tab-btn{
+    display:flex; align-items:center; gap:7px;
+    padding:10px 20px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:700;
+    color:#5a6b48;
+  }
+  .tab-btn.active{ background:var(--bg-alt); color:var(--green-dark); }
+  .tab-btn .count{
+    background:var(--line);
+    color:var(--green-deep);
+    font-size:11px;
+    padding:1px 7px;
+    border-radius:999px;
+  }
+  .tab-btn.active .count{ background:var(--green); color:var(--cream); }
+
+  /* ---------- FEED GRID (shared with journal.html) ---------- */
+  .feed-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:20px;
+    padding-bottom:50px;
+  }
+  .jcard{
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .jcard-head{ display:flex; align-items:center; justify-content:space-between; }
+  .mood-badge{
+    display:flex; align-items:center; gap:6px;
+    padding:5px 11px;
+    border-radius:999px;
+    font-size:11.5px;
+    font-weight:700;
+  }
+  .jcard-head-icons{ display:flex; align-items:center; gap:10px; color:#9db384; }
+  .jcard-head-icons button{ font-size:14px; }
+  .jcard-head-icons button.saved{ color:var(--green-dark); }
+  .jcard-head-icons button.del-btn{ color:#c9857d; }
+
+  .jcard-user{ display:flex; align-items:center; gap:10px; }
+  .avatar{
+    width:32px; height:32px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .jcard-user .uname{ font-size:13px; font-weight:700; color:var(--green-deep); display:flex; align-items:center; gap:4px; }
+  .jcard-user .utime{ font-size:11px; color:#8ba36e; }
+
+  .jcard h3{ font-size:15px; color:var(--green-deep); line-height:1.3; }
+  .jcard .jtext{
+    font-size:12.5px;
+    color:#5a6b48;
+    line-height:1.5;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .jcard-photo{
+    aspect-ratio:1.3/1;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:52px;
+    overflow:hidden;
+  }
+  .jcard-stats{
+    display:flex; align-items:center; gap:16px;
+    font-size:12px; color:#5a6b48;
+    padding-top:4px;
+    border-top:1px solid var(--line);
+    margin-top:2px;
+  }
+  .jcard-stats span{ display:flex; align-items:center; gap:5px; }
+  .like-btn{ display:flex; align-items:center; gap:5px; font-size:12px; color:#5a6b48; }
+  .like-btn.liked{ color:#ef6a5f; font-weight:700; }
+
+  /* ---------- EMPTY STATE ---------- */
+  .empty-state{
+    grid-column:1/-1;
+    text-align:center;
+    background:var(--bg-alt);
+    border:1px dashed var(--line);
+    border-radius:20px;
+    padding:60px 30px;
+  }
+  .empty-state .emoji{ font-size:40px; margin-bottom:12px; }
+  .empty-state h4{ font-size:16px; color:var(--green-deep); margin-bottom:6px; }
+  .empty-state p{ font-size:13px; color:#5a6b48; margin-bottom:18px; }
+  .empty-state a{
+    display:inline-block;
+    background:var(--green);
+    color:var(--cream);
+    font-weight:700;
+    font-size:13.5px;
+    padding:11px 22px;
+    border-radius:999px;
+  }
+
+  @media (max-width: 1100px){
+    .feed-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+  /* ---------- MOBILE MENU (hamburger) ---------- */
+  .hamburger{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:5px;
+    width:42px;
+    height:42px;
+    background:var(--cream);
+    border-radius:999px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    cursor:pointer;
+    justify-self:end;
+  }
+  .hamburger span{
+    display:block;
+    width:18px;
+    height:2px;
+    background:var(--green-deep);
+    border-radius:2px;
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2){ opacity:0; }
+  .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    background:var(--cream);
+    margin:0 32px 16px;
+    padding:10px;
+    border-radius:18px;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .mobile-menu a{
+    padding:12px 16px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:14.5px;
+    color:#5a6b48;
+  }
+  .mobile-menu a.active{
+    background:var(--bg-alt);
+    color:var(--green-dark);
+  }
+  .mobile-menu.open{ display:flex; }
+
+  @media (max-width: 640px){
+    .feed-grid{ grid-template-columns:1fr; }
+    .navlinks{ display:none; }
+    .navbar{ grid-template-columns:1fr auto auto; }
+    .hamburger{ display:flex; }
+    .btn-terminal{ padding:10px 16px; font-size:12.5px; }
+    .profile-hero{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="brand">
+    <div class="blob-face"><img src="assets/overview/slimelogo.png" alt="Slime Runes mascot"></div>
+    <div class="lines"><span>SLIME</span><span>RUNES</span></div>
+  </div>
+  <nav class="navlinks">
+    <a href="index.html">overview</a>
+    <a href="journal.html">journal</a>
+    <a href="create.html">create</a>
+    <a href="profile.html" class="active">profile</a>
+  </nav>
+  <a href="#" class="btn-terminal" data-wallet-btn>connect wallet</a>
+  <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="index.html">overview</a>
+  <a href="journal.html">journal</a>
+  <a href="create.html">create</a>
+  <a href="profile.html" class="active">profile</a>
+</nav>
+
+<script>
+  function toggleMobileMenu(){
+    document.getElementById('hamburgerBtn').classList.toggle('open');
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+</script>
+<script src="wallet.js"></script>
+
+<div class="wrap">
+
+  <!-- PROFILE HEAD -->
+  <div class="profile-hero">
+    <div class="profile-avatar"><img src="assets/overview/slimelogo.png" alt="Your slime avatar"></div>
+    <div class="profile-info">
+      <h1 id="profileName">Anonymous Slime</h1>
+      <div class="wallet-status" id="walletStatus">👛 wallet not connected</div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat">
+        <div class="num" id="statJournals">0</div>
+        <div class="label">Journals</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="statLikesGiven">0</div>
+        <div class="label">Liked</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="statSaved">0</div>
+        <div class="label">Saved</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="streak-card">
+    <span>⭐</span>
+    <span id="streakText"><strong>You haven't written a journal yet.</strong> Start your streak today!</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="mine">🌱 My Journals <span class="count" id="countMine">0</span></button>
+    <button class="tab-btn" data-tab="liked">❤️ Liked <span class="count" id="countLiked">0</span></button>
+    <button class="tab-btn" data-tab="saved">🔖 Saved <span class="count" id="countSaved">0</span></button>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed-grid" id="feedGrid"></div>
+
+</div>
+
+<script>
+  const MOOD_COLORS = {
+    Happy:   { bg:'#e4f6cf', text:'#3f7d1c', solid:'#7ac93c' },
+    Angry:   { bg:'#fbe1de', text:'#c14f43', solid:'#ef6a5f' },
+    Sad:     { bg:'#e1f0f9', text:'#2f6f96', solid:'#6fb3e0' },
+    Excited: { bg:'#fcf0d3', text:'#a3780f', solid:'#f0b93a' },
+    Sleepy:  { bg:'#eee3fa', text:'#6b46a8', solid:'#a687d6' },
+    Chaos:   { bg:'#e5e5e5', text:'#2b2b2b', solid:'#2b2b2b' }
+  };
+  const MOOD_EMOJI = { Happy:'😊', Angry:'😠', Sad:'😢', Excited:'🤩', Sleepy:'😴', Chaos:'🌀' };
+
+  // same sample pool as journal.html, so liked/saved ids resolve to real content
+  const SAMPLE_POSTS = [
+    { id:'s1', mood:'Happy', user:'GreenLeaf', avatar:'🐸', time:'10m ago', title:'Aku seneng bgt hari ini!', text:'Habis HP 1k$ dari farming pagi tadi. Terima kasih semesta! 💚✨', likes:128, comments:23, runes:12 },
+    { id:'s2', mood:'Angry', user:'RageSlime', avatar:'😡', time:'25m ago', title:'Hari ini aku apes banget dah!', text:'Gas fee mahal, transaksi gagal mulu. Mana rugi lagi! 🔥', likes:98, comments:41, runes:8 },
+    { id:'s3', mood:'Sad', user:'BlueSlime', avatar:'💧', time:'1h ago', title:'Sedih banget hari ini...', text:'Project yang kupegang dari awal tutup tiba-tiba. Lost semua hope 😢', likes:76, comments:19, runes:3 },
+    { id:'s4', mood:'Excited', user:'DreamSlime', avatar:'⭐', time:'2h ago', title:'OMG! Tidak nyangka!', text:'Baru aja dapet legendary rune di dungeon! Hoki banget hari ini! 🤩', likes:142, comments:35, runes:15 },
+    { id:'s5', mood:'Sleepy', user:'SleepySlime', avatar:'😴', time:'3h ago', title:'Capek banget hari ini 😴', text:'Kerja terus dari pagi sampai malam. Saatnya istirahat yang cukup 🥱', likes:64, comments:16, runes:2 },
+    { id:'s6', mood:'Chaos', user:'ChaosSlime', avatar:'🌀', time:'4h ago', title:'Hari yang random abis!', text:'Bangun tidur tenggelam di kolam, terus ketemu naga, terus dapet airdrop 😂', likes:87, comments:28, runes:6 },
+    { id:'s7', mood:'Happy', user:'PlantSlime', avatar:'🌱', time:'5h ago', title:'Menanam hari ini 🌱', text:'Menanam tanaman kecil hari ini. Semoga tumbuh besar seperti mimpiku.', likes:55, comments:11, runes:1 },
+    { id:'s8', mood:'Sad', user:'LonelySlime', avatar:'💙', time:'6h ago', title:'Merasa sendirian...', text:'Kadang merasa ga ada yang ngerti. Tapi gapapa, aku kuat kok! 💙', likes:43, comments:9, runes:1 },
+    { id:'s9', mood:'Happy', user:'SunnySlime', avatar:'☀️', time:'8h ago', title:'Pagi yang cerah!', text:'Bangun pagi, ngeliat harga token ijo semua. Mood langsung naik 📈', likes:71, comments:14, runes:4 },
+    { id:'s10', mood:'Excited', user:'MoonSlime', avatar:'🌙', time:'10h ago', title:'Mint berhasil!', text:'Akhirnya kebagian slot mint setelah nunggu 2 jam. Worth it banget!', likes:112, comments:27, runes:9 },
+    { id:'s11', mood:'Angry', user:'StormSlime', avatar:'⚡', time:'11h ago', title:'Kena scam lagi 😤', text:'Udah kesekian kali warning tapi masih ada aja yang kena. Hati-hati bro.', likes:60, comments:33, runes:5 },
+    { id:'s12', mood:'Sleepy', user:'CloudSlime', avatar:'☁️', time:'13h ago', title:'Ngantuk tapi FOMO', text:'Udah jam 2 pagi tapi masih mantengin chart. Slime macam apa ini.', likes:38, comments:7, runes:1 }
+  ];
+
+  const STORAGE_KEY = 'slimeRunes_journals';
+  const LIKED_KEY = 'slimeRunes_likedPosts';
+  const SAVED_KEY = 'slimeRunes_savedPosts';
+
+  function getMyRaw(){
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+  function getMyPosts(){
+    return getMyRaw().map(p => ({
+      id: p.id, mood: p.mood, user: 'You', avatar: p.emoji || '🐸',
+      time: p.dateLabel || 'just now', title: p.title, text: p.body,
+      likes: p.likes || 0, comments: 0, runes: 0, mine:true
+    }));
+  }
+  function getLiked(){ return JSON.parse(localStorage.getItem(LIKED_KEY) || '[]'); }
+  function getSaved(){ return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); }
+  function toggleLiked(id){
+    const liked = getLiked();
+    const idx = liked.indexOf(id);
+    if (idx === -1) liked.push(id); else liked.splice(idx,1);
+    localStorage.setItem(LIKED_KEY, JSON.stringify(liked));
+    return liked.includes(id);
+  }
+  function toggleSaved(id){
+    const saved = getSaved();
+    const idx = saved.indexOf(id);
+    if (idx === -1) saved.push(id); else saved.splice(idx,1);
+    localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
+    return saved.includes(id);
+  }
+
+  const myPosts = getMyPosts();
+  const allKnownPosts = [...myPosts, ...SAMPLE_POSTS];
+
+  function findPost(id){ return allKnownPosts.find(p => p.id === id); }
+
+  // header stats
+  document.getElementById('statJournals').textContent = myPosts.length;
+  document.getElementById('statLikesGiven').textContent = getLiked().length;
+  document.getElementById('statSaved').textContent = getSaved().length;
+  document.getElementById('countMine').textContent = myPosts.length;
+  document.getElementById('countLiked').textContent = getLiked().length;
+  document.getElementById('countSaved').textContent = getSaved().length;
+
+  if (myPosts.length > 0){
+    document.getElementById('streakText').innerHTML =
+      `<strong>${myPosts.length} journal${myPosts.length > 1 ? 's' : ''} written.</strong> Keep the streak going, come back tomorrow!`;
+  }
+
+  function renderCard(post, opts={}){
+    const mc = MOOD_COLORS[post.mood];
+    const liked = getLiked().includes(post.id);
+    const saved = getSaved().includes(post.id);
+    return `
+      <div class="jcard" data-mood="${post.mood}">
+        <div class="jcard-head">
+          <span class="mood-badge" style="background:${mc.bg}; color:${mc.text}">${MOOD_EMOJI[post.mood]} ${post.mood}</span>
+          <div class="jcard-head-icons">
+            <button class="save-btn ${saved ? 'saved':''}" data-id="${post.id}" title="Save">🔖</button>
+            ${opts.deletable ? `<button class="del-btn" data-id="${post.id}" title="Delete">🗑</button>` : ''}
+          </div>
+        </div>
+        <div class="jcard-user">
+          <div class="avatar" style="background:${mc.bg}">${post.avatar}</div>
+          <div>
+            <div class="uname">${post.user} ${post.mine ? '' : '<span style=\"color:#3f7d1c\">✓</span>'}</div>
+            <div class="utime">${post.time}</div>
+          </div>
+        </div>
+        <h3>${post.title}</h3>
+        <p class="jtext">${post.text}</p>
+        <div class="jcard-photo" style="background: radial-gradient(circle at 30% 25%, ${mc.bg}, ${mc.solid}55 80%)">${MOOD_EMOJI[post.mood]}</div>
+        <div class="jcard-stats">
+          <button class="like-btn ${liked ? 'liked':''}" data-id="${post.id}">
+            <span class="heart">${liked ? '❤️' : '🤍'}</span> <span class="like-count">${post.likes + (liked ? 1 : 0)}</span>
+          </button>
+          <span>💬 ${post.comments}</span>
+          <span>💎 ${post.runes}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const feedGrid = document.getElementById('feedGrid');
+  let activeTab = 'mine';
+
+  function emptyState(tab){
+    const map = {
+      mine: { emoji:'🌱', title:'No journal yet', text:"You haven't written any daily journal. Start today!", cta:'Create Journal', href:'create.html' },
+      liked: { emoji:'❤️', title:'No liked posts yet', text:'Posts you like in the journal feed will show up here.', cta:'Browse Journal', href:'journal.html' },
+      saved: { emoji:'🔖', title:'No saved posts yet', text:'Bookmark posts from the feed to read them again later.', cta:'Browse Journal', href:'journal.html' }
+    };
+    const s = map[tab];
+    return `
+      <div class="empty-state">
+        <div class="emoji">${s.emoji}</div>
+        <h4>${s.title}</h4>
+        <p>${s.text}</p>
+        <a href="${s.href}">${s.cta}</a>
+      </div>
+    `;
+  }
+
+  function render(){
+    let list = [];
+    if (activeTab === 'mine') list = myPosts;
+    if (activeTab === 'liked') list = getLiked().map(findPost).filter(Boolean);
+    if (activeTab === 'saved') list = getSaved().map(findPost).filter(Boolean);
+
+    if (list.length === 0){
+      feedGrid.innerHTML = emptyState(activeTab);
+      return;
+    }
+
+    feedGrid.innerHTML = list.map(p => renderCard(p, { deletable: activeTab === 'mine' })).join('');
+
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const isLiked = toggleLiked(id);
+        btn.classList.toggle('liked', isLiked);
+        btn.querySelector('.heart').textContent = isLiked ? '❤️' : '🤍';
+        const base = findPost(id).likes;
+        btn.querySelector('.like-count').textContent = base + (isLiked ? 1 : 0);
+        document.getElementById('statLikesGiven').textContent = getLiked().length;
+        document.getElementById('countLiked').textContent = getLiked().length;
+        if (activeTab === 'liked') render();
+      });
+    });
+
+    document.querySelectorAll('.save-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const isSaved = toggleSaved(id);
+        btn.classList.toggle('saved', isSaved);
+        document.getElementById('statSaved').textContent = getSaved().length;
+        document.getElementById('countSaved').textContent = getSaved().length;
+        if (activeTab === 'saved') render();
+      });
+    });
+
+    document.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('Delete this journal? This cannot be undone.')) return;
+        const id = btn.dataset.id;
+        const remaining = getMyRaw().filter(p => p.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
+        location.reload();
+      });
+    });
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      render();
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
