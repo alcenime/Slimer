@@ -47,7 +47,11 @@
           url: window.location.origin,
           icons: [window.location.origin + '/assets/overview/slimelogo.png']
         },
-        features: { analytics: false }
+        features: {
+          analytics: false,
+          email: false,
+          socials: false
+        }
       });
 
       modal.subscribeAccount((account)=>{
