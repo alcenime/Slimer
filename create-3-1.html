@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Daily Journal — Slime Runes</title>
+<style>
+  :root{
+    --bg: #f4f9e9;
+    --bg-alt: #eef7db;
+    --green: #7ac93c;
+    --green-dark: #3f7d1c;
+    --green-deep: #1f3d0f;
+    --terminal: #16240f;
+    --terminal-line: #234015;
+    --pink: #f4a6c6;
+    --cream: #fffdf6;
+    --line: #dbe9c2;
+    --text: #234015;
+
+    --mood-happy: #7ac93c;
+    --mood-angry: #ef6a5f;
+    --mood-sad: #6fb3e0;
+    --mood-excited: #f0b93a;
+    --mood-sleepy: #a687d6;
+    --mood-chaos: #2b2b2b;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    font-family:'Trebuchet MS', 'Segoe UI', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+  }
+
+  .mono{ font-family:'Courier New', monospace; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; border:none; background:none; cursor:pointer; color:inherit; }
+  input, textarea, select{ font-family:inherit; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- NAVBAR ---------- */
+  .navbar{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:16px;
+    padding:22px 32px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:0.5px;
+    color:var(--green-deep);
+  }
+  .brand .blob-face{ width:42px; height:42px; border-radius:50%; overflow:hidden; }
+  .brand .blob-face img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .brand .lines{ display:flex; flex-direction:column; line-height:1.05; }
+  .brand .lines span:first-child{ color:var(--green); }
+
+  .navlinks{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--cream);
+    border-radius:999px;
+    padding:6px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    justify-self:center;
+  }
+  .navlinks a{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 18px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    color:#5a6b48;
+  }
+  .navlinks a.active{
+    background:var(--bg-alt);
+    color:var(--green-dark);
+  }
+
+  .navbar .btn-terminal{ justify-self:end; }
+  .btn-terminal{
+    background:var(--terminal);
+    color:#a9e57a;
+    font-family:'Courier New', monospace;
+    font-weight:700;
+    font-size:14px;
+    padding:12px 20px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+
+  /* ---------- PAGE HEAD ---------- */
+  .page-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    padding-top:6px;
+    margin-bottom:36px;
+  }
+  .page-head h1{
+    font-size:28px;
+    color:var(--green-deep);
+    margin-bottom:6px;
+  }
+  .page-head p{
+    font-size:14.5px;
+    color:#5a6b48;
+  }
+  .page-head-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .date-pill{
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:9px 16px;
+    font-size:12.5px;
+    color:#5a6b48;
+    line-height:1.4;
+  }
+  .date-pill strong{ display:block; font-size:13px; color:var(--green-deep); }
+  .icon-btn{
+    width:40px; height:40px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:12px;
+    font-size:16px;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .create-grid{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    gap:24px;
+    align-items:start;
+    padding-bottom:80px;
+  }
+
+  .form-panel{
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:32px;
+  }
+  .form-block{ margin-bottom:32px; }
+  .form-block h3{
+    font-size:16px;
+    color:var(--green-deep);
+    margin-bottom:6px;
+  }
+  .form-block .sub{
+    font-size:13px;
+    color:#5a6b48;
+    margin-bottom:18px;
+  }
+
+  /* mood grid */
+  .mood-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+  }
+  .mood-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    padding:14px 6px 10px;
+    border-radius:14px;
+    border:2px solid transparent;
+    background:var(--cream);
+    position:relative;
+  }
+  .mood-btn .chip{
+    width:46px; height:46px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .mood-btn span.label{ font-size:12px; font-weight:700; color:#5a6b48; }
+  .mood-btn.selected{
+    border-color:var(--green);
+    background:var(--cream);
+  }
+  .mood-btn.selected span.label{ color:var(--green-dark); }
+  .mood-btn .check{
+    position:absolute;
+    top:-6px; right:-6px;
+    width:18px; height:18px;
+    border-radius:50%;
+    background:var(--green);
+    color:var(--cream);
+    font-size:11px;
+    display:none;
+    align-items:center; justify-content:center;
+  }
+  .mood-btn.selected .check{ display:flex; }
+
+  .mood-happy .chip{ background:#e4f6cf; }
+  .mood-angry .chip{ background:#fbe1de; }
+  .mood-sad .chip{ background:#e1f0f9; }
+  .mood-excited .chip{ background:#fcf0d3; }
+  .mood-sleepy .chip{ background:#eee3fa; }
+  .mood-chaos .chip{ background:#e5e5e5; }
+
+  /* inputs */
+  .field{ position:relative; margin-bottom:8px; }
+  .field-title{
+    width:100%;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 60px 16px 40px;
+    font-size:14.5px;
+    color:var(--text);
+  }
+  .field-title::placeholder{ color:#9db384; }
+  .field-icon{
+    position:absolute;
+    left:14px; top:50%; transform:translateY(-50%);
+    font-size:14px;
+  }
+  .char-count{
+    text-align:right;
+    font-size:11.5px;
+    color:#8ba36e;
+    margin-bottom:16px;
+  }
+  .field-body{
+    width:100%;
+    min-height:150px;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    font-size:14.5px;
+    color:var(--text);
+    resize:vertical;
+  }
+  .field-body::placeholder{ color:#9db384; }
+
+  .option-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .opt-btn{
+    display:flex; align-items:center; gap:8px;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:11px 16px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--green-dark);
+  }
+  select.opt-btn{ appearance:none; -webkit-appearance:none; }
+
+  .notice-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 20px;
+    margin-bottom:20px;
+  }
+  .notice-card .star{ font-size:20px; }
+  .notice-card strong{ display:block; font-size:13.5px; color:var(--green-dark); }
+  .notice-card p{ font-size:12.5px; color:#5a6b48; }
+  .notice-card.limit-hit{ background:#fbe9e9; border-color:#f1c3c3; }
+  .notice-card.limit-hit strong{ color:#b5423a; }
+
+  .publish-btn{
+    width:100%;
+    background:linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
+    color:var(--cream);
+    font-weight:800;
+    font-size:16px;
+    padding:17px;
+    border-radius:14px;
+    box-shadow:0 6px 0 var(--green-deep);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .publish-btn:active{ transform:translateY(3px); box-shadow:0 3px 0 var(--green-deep); }
+  .publish-btn:disabled{
+    background:#c9d6bb;
+    color:#8a9a7a;
+    box-shadow:0 6px 0 #b3c2a3;
+    cursor:not-allowed;
+  }
+  .onchain-note{
+    text-align:center;
+    font-size:12px;
+    color:#7c8f68;
+    margin-top:14px;
+  }
+
+  /* preview column */
+  .preview-col{ display:flex; flex-direction:column; gap:20px; position:sticky; top:24px; }
+  .preview-card{
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:26px;
+  }
+  .preview-card h4{
+    font-family:'Courier New', monospace;
+    font-size:14px;
+    color:var(--green-deep);
+    text-decoration:underline;
+    text-underline-offset:4px;
+    margin-bottom:18px;
+  }
+  .preview-photo{
+    background:var(--cream);
+    border-radius:10px;
+    padding:10px;
+    box-shadow:0 14px 26px rgba(31,61,15,0.14);
+    transform:rotate(1deg);
+    margin-bottom:16px;
+  }
+  .preview-photo .frame{
+    aspect-ratio:1/1;
+    border-radius:6px;
+    overflow:hidden;
+    background: radial-gradient(circle at 30% 20%, #eef7c9, #cbe89a 45%, #9fd15f 100%);
+  }
+  .preview-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .preview-mood-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--green-dark);
+    margin-bottom:18px;
+  }
+  .preview-card h5{
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:#8ba36e;
+    margin-bottom:6px;
+  }
+  .preview-card .pv-title{
+    font-size:15px;
+    font-weight:700;
+    color:var(--green-deep);
+    margin-bottom:16px;
+    word-break:break-word;
+  }
+  .preview-card .pv-body{
+    font-size:13.5px;
+    color:#456031;
+    line-height:1.6;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  .tip-card{
+    background:var(--bg-alt);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:22px 26px;
+  }
+  .tip-card h4{
+    font-size:14px;
+    color:var(--green-deep);
+    margin-bottom:8px;
+  }
+  .tip-card p{
+    font-size:13px;
+    color:#5a6b48;
+    line-height:1.55;
+  }
+
+  /* ---------- MOBILE MENU (hamburger) ---------- */
+  .hamburger{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:5px;
+    width:42px;
+    height:42px;
+    background:var(--cream);
+    border-radius:999px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    cursor:pointer;
+    justify-self:end;
+  }
+  .hamburger span{
+    display:block;
+    width:18px;
+    height:2px;
+    background:var(--green-deep);
+    border-radius:2px;
+    transition:transform .25s ease, opacity .25s ease;
+  }
+  .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2){ opacity:0; }
+  .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    background:var(--cream);
+    margin:0 32px 16px;
+    padding:10px;
+    border-radius:18px;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .mobile-menu a{
+    padding:12px 16px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:14.5px;
+    color:#5a6b48;
+  }
+  .mobile-menu a.active{
+    background:var(--bg-alt);
+    color:var(--green-dark);
+  }
+  .mobile-menu.open{ display:flex; }
+
+  @media (max-width: 900px){
+    .create-grid{ grid-template-columns:1fr; }
+    .mood-grid{ grid-template-columns:repeat(3,1fr); }
+    .navlinks{ display:none; }
+    .navbar{ grid-template-columns:1fr auto auto; }
+    .hamburger{ display:flex; }
+    .btn-terminal{ padding:10px 16px; font-size:12.5px; }
+    .preview-col{ position:static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="brand">
+    <div class="blob-face">
+      <img src="assets/overview/slimelogo.png" alt="Slime Runes mascot">
+    </div>
+    <div class="lines">
+      <span>SLIME</span>
+      <span>RUNES</span>
+    </div>
+  </div>
+  <nav class="navlinks">
+    <a href="index.html">overview</a>
+    <a href="journal.html">journal</a>
+    <a href="create.html" class="active">create</a>
+    <a href="profile.html">profile</a>
+  </nav>
+  <a href="#" class="btn-terminal" id="walletBtn">connect wallet</a>
+  <div class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="index.html">overview</a>
+  <a href="journal.html">journal</a>
+  <a href="create.html" class="active">create</a>
+  <a href="profile.html">profile</a>
+</nav>
+
+<script>
+  function toggleMobileMenu(){
+    document.getElementById('hamburgerBtn').classList.toggle('open');
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+</script>
+
+<div class="wrap">
+
+  <!-- PAGE HEAD -->
+  <div class="page-head">
+    <div>
+      <h1>Create Daily Journal 🌱</h1>
+      <p>Write your story. Express your mood. Leave your mark.</p>
+    </div>
+    <div class="page-head-actions">
+      <div class="date-pill mono">
+        <strong id="todayLabel">Today</strong>
+        <span id="todayDate">—</span>
+      </div>
+      <a href="journal.html" class="icon-btn">📖</a>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="create-grid">
+
+    <!-- FORM -->
+    <section class="form-panel">
+
+      <div class="form-block">
+        <h3>1. How are you today?</h3>
+        <p class="sub">Choose a slime mood that matches your day.</p>
+        <div class="mood-grid" id="moodGrid">
+          <button class="mood-btn mood-happy selected" data-mood="Happy" data-emoji="😊">
+            <span class="check">✓</span>
+            <span class="chip">😊</span>
+            <span class="label">Happy</span>
+          </button>
+          <button class="mood-btn mood-angry" data-mood="Angry" data-emoji="😠">
+            <span class="check">✓</span>
+            <span class="chip">😠</span>
+            <span class="label">Angry</span>
+          </button>
+          <button class="mood-btn mood-sad" data-mood="Sad" data-emoji="😢">
+            <span class="check">✓</span>
+            <span class="chip">😢</span>
+            <span class="label">Sad</span>
+          </button>
+          <button class="mood-btn mood-excited" data-mood="Excited" data-emoji="🤩">
+            <span class="check">✓</span>
+            <span class="chip">🤩</span>
+            <span class="label">Excited</span>
+          </button>
+          <button class="mood-btn mood-sleepy" data-mood="Sleepy" data-emoji="😴">
+            <span class="check">✓</span>
+            <span class="chip">😴</span>
+            <span class="label">Sleepy</span>
+          </button>
+          <button class="mood-btn mood-chaos" data-mood="Chaos" data-emoji="🌀">
+            <span class="check">✓</span>
+            <span class="chip">🌀</span>
+            <span class="label">Chaos</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-block">
+        <h3>2. Write your journal 🌿</h3>
+        <div class="field">
+          <span class="field-icon">🌱</span>
+          <input type="text" id="titleInput" class="field-title" placeholder="Give your journal a title..." maxlength="60">
+        </div>
+        <div class="char-count" id="titleCount">0/60</div>
+
+        <textarea id="bodyInput" class="field-body" placeholder="What happened today? How do you feel? Tell your slime story..." maxlength="500"></textarea>
+        <div class="char-count" id="bodyCount">0/500</div>
+
+        <div class="option-row">
+          <button class="opt-btn" type="button">🖼 Add Photo</button>
+          <button class="opt-btn" type="button">💎 Add Rune</button>
+          <select class="opt-btn" id="visibilitySelect">
+            <option>Public</option>
+            <option>Followers only</option>
+            <option>Private</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="notice-card" id="limitNotice">
+        <span class="star">⭐</span>
+        <div>
+          <strong>You can create one journal per day.</strong>
+          <p>Come back tomorrow to write a new one!</p>
+        </div>
+      </div>
+
+      <button class="publish-btn" id="publishBtn">Publish Journal 🖋</button>
+      <p class="onchain-note">🛡 Your journal will be stored onchain.</p>
+    </section>
+
+    <!-- PREVIEW -->
+    <aside class="preview-col">
+      <div class="preview-card">
+        <h4>&gt;_ Preview 🌱</h4>
+        <div class="preview-photo">
+          <div class="frame">
+            <img src="assets/overview/slimelogo.png" alt="Journal preview">
+          </div>
+        </div>
+        <span class="preview-mood-pill" id="previewMoodPill">😊 Happy Slime</span>
+        <h5>Title</h5>
+        <p class="pv-title" id="previewTitle">Your title will appear here</p>
+        <h5>Journal</h5>
+        <p class="pv-body" id="previewBody">Start writing to see your story here...</p>
+      </div>
+
+      <div class="tip-card">
+        <h4>🍀 Mood Tip</h4>
+        <p id="moodTip">Every mood is okay. Your slime is here to share with you.</p>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'slimeRunes_journals';
+  const LAST_POST_KEY = 'slimeRunes_lastPostDate';
+
+  const todayStr = () => {
+    const d = new Date();
+    return d.toISOString().slice(0,10);
+  };
+  const todayLabel = () => {
+    const d = new Date();
+    return d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+  };
+  document.getElementById('todayDate').textContent = todayLabel();
+
+  const moodTips = {
+    Happy: "Every mood is okay. Your slime is here to share with you.",
+    Angry: "Let it out here. Your slime keeps your secrets.",
+    Sad: "Some days are heavy. Writing it down helps carry it.",
+    Excited: "Ride the wave! Big feelings deserve big journals.",
+    Sleepy: "Even a tired slime has a story worth keeping.",
+    Chaos: "No mood is too messy to write about."
+  };
+
+  const moodButtons = document.querySelectorAll('.mood-btn');
+  const previewMoodPill = document.getElementById('previewMoodPill');
+  const moodTip = document.getElementById('moodTip');
+  let selectedMood = 'Happy';
+  let selectedEmoji = '😊';
+
+  moodButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodButtons.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedMood = btn.dataset.mood;
+      selectedEmoji = btn.dataset.emoji;
+      previewMoodPill.textContent = `${selectedEmoji} ${selectedMood} Slime`;
+      moodTip.textContent = moodTips[selectedMood];
+    });
+  });
+
+  const titleInput = document.getElementById('titleInput');
+  const bodyInput = document.getElementById('bodyInput');
+  const titleCount = document.getElementById('titleCount');
+  const bodyCount = document.getElementById('bodyCount');
+  const previewTitle = document.getElementById('previewTitle');
+  const previewBody = document.getElementById('previewBody');
+
+  titleInput.addEventListener('input', () => {
+    titleCount.textContent = `${titleInput.value.length}/60`;
+    previewTitle.textContent = titleInput.value.trim() || 'Your title will appear here';
+  });
+  bodyInput.addEventListener('input', () => {
+    bodyCount.textContent = `${bodyInput.value.length}/500`;
+    previewBody.textContent = bodyInput.value.trim() || 'Start writing to see your story here...';
+  });
+
+  const publishBtn = document.getElementById('publishBtn');
+  const limitNotice = document.getElementById('limitNotice');
+
+  function alreadyPostedToday(){
+    return localStorage.getItem(LAST_POST_KEY) === todayStr();
+  }
+
+  function refreshLimitState(){
+    if (alreadyPostedToday()){
+      publishBtn.disabled = true;
+      publishBtn.textContent = "Already posted today ✓";
+      limitNotice.classList.add('limit-hit');
+      limitNotice.querySelector('strong').textContent = "You've already written today's journal.";
+      limitNotice.querySelector('p').textContent = "Come back tomorrow to write a new one!";
+    }
+  }
+  refreshLimitState();
+
+  publishBtn.addEventListener('click', () => {
+    if (alreadyPostedToday()) return;
+    if (!titleInput.value.trim() || !bodyInput.value.trim()){
+      alert('Give your journal a title and a story before publishing.');
+      return;
+    }
+    const entry = {
+      id: Date.now().toString(),
+      date: todayStr(),
+      dateLabel: todayLabel(),
+      mood: selectedMood,
+      emoji: selectedEmoji,
+      title: titleInput.value.trim(),
+      body: bodyInput.value.trim(),
+      visibility: document.getElementById('visibilitySelect').value,
+      likes: 0
+    };
+    const journals = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    journals.unshift(entry);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(journals));
+    localStorage.setItem(LAST_POST_KEY, todayStr());
+    refreshLimitState();
+    window.location.href = 'journal.html';
+  });
+</script>
+
+</body>
+</html>
